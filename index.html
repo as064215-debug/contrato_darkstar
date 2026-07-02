@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+    <title>Dark Star · Contrato de Exclusividade</title>
+    <!-- Bibliotecas para gerar PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        /* ===== RESET E BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0b0b14;
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+            color: #e8e8e8;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ===== TELA DE CARREGAMENTO INICIAL ===== */
+        #loadingScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 30% 30%, #1a1a30, #07070e);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+            padding: 24px;
+            text-align: center;
+        }
+
+        #loadingScreen.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .loader-icon {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 24px;
+            animation: pulseGlow 1.8s ease-in-out infinite;
+            filter: drop-shadow(0 0 30px rgba(243, 156, 18, 0.25));
+        }
+
+        .loader-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: none;
+            stroke: #f1c40f;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        @keyframes pulseGlow {
+            0% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.08); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.7; }
+        }
+
+        .loader-text {
+            font-size: 1.4rem;
+            font-weight: 300;
+            color: #ccc;
+            max-width: 420px;
+            line-height: 1.6;
+            letter-spacing: 0.5px;
+            margin-bottom: 32px;
+        }
+
+        .loader-text strong {
+            color: #f1c40f;
+            font-weight: 600;
+        }
+
+        .progress-container {
+            width: 280px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(243, 156, 18, 0.05);
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #f39c12, #f1c40f);
+            border-radius: 12px;
+            transition: width 0.3s linear;
+        }
+
+        #verificationBadge {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 28px;
+            animation: fadeInUp 0.7s ease forwards;
+        }
+
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(24px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .badge-icon {
+            width: 72px;
+            height: 72px;
+            margin-bottom: 14px;
+            filter: drop-shadow(0 0 40px rgba(46, 204, 113, 0.15));
+        }
+
+        .badge-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: none;
+            stroke: #2ecc71;
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .badge-icon .check-mark {
+            stroke-dasharray: 50;
+            stroke-dashoffset: 50;
+            animation: drawCheck 0.6s ease forwards 0.3s;
+        }
+
+        @keyframes drawCheck {
+            to { stroke-dashoffset: 0; }
+        }
+
+        .badge-text {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #2ecc71;
+            letter-spacing: 1.5px;
+            text-shadow: 0 0 30px rgba(46, 204, 113, 0.15);
+        }
+
+        /* ===== CONTEÚDO PRINCIPAL ===== */
+        #mainContent {
+            display: none;
+            width: 100%;
+            max-width: 780px;
+            padding: 24px 16px 60px;
+            animation: fadeInContent 0.8s ease;
+        }
+
+        @keyframes fadeInContent {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+            padding-bottom: 18px;
+            border-bottom: 2px solid rgba(243, 156, 18, 0.15);
+        }
+
+        .header .star-icon {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            margin-bottom: 6px;
+        }
+
+        .header .star-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: #f1c40f;
+            stroke: none;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, #f9d976, #f39c12);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 40px rgba(243, 156, 18, 0.1);
+        }
+
+        .header .sub {
+            color: #aaa;
+            font-size: 0.9rem;
+            letter-spacing: 3px;
+            margin-top: 4px;
+            font-weight: 300;
+        }
+
+        .contract-text {
+            background: rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(2px);
+            border-radius: 20px;
+            padding: 28px 24px;
+            margin-bottom: 36px;
+            border-left: 4px solid #f39c12;
+            line-height: 1.75;
+            font-size: 0.98rem;
+            color: #d6d6d6;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .contract-text h2 {
+            color: #f1c40f;
+            font-size: 1.15rem;
+            margin: 24px 0 10px 0;
+            border-bottom: 1px solid rgba(241, 196, 15, 0.1);
+            padding-bottom: 6px;
+        }
+
+        .contract-text h2:first-of-type {
+            margin-top: 0;
+        }
+
+        .contract-text p {
+            margin: 12px 0;
+            text-align: justify;
+        }
+
+        .contract-text ul {
+            padding-left: 22px;
+            margin: 8px 0 18px 0;
+        }
+
+        .contract-text ul li {
+            margin: 6px 0;
+            list-style-type: "✦ ";
+            padding-left: 6px;
+        }
+
+        .contract-text strong {
+            color: #f1c40f;
+            font-weight: 600;
+        }
+
+        .signature-line {
+            margin-top: 24px;
+            padding-top: 18px;
+            border-top: 1px dashed #555;
+            font-style: italic;
+            color: #bbb;
+            font-size: 0.95rem;
+        }
+
+        .form-section {
+            background: rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(4px);
+            border-radius: 24px;
+            padding: 28px 22px;
+            border: 1px solid rgba(255, 215, 0, 0.06);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .form-section h3 {
+            color: #f1c40f;
+            font-size: 1.5rem;
+            margin-bottom: 24px;
+            text-align: center;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #ccc;
+        }
+
+        .form-group label .required {
+            color: #e74c3c;
+            margin-left: 4px;
+        }
+
+        .form-group input,
+        .form-group select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid #3a3a4a;
+            border-radius: 14px;
+            padding: 14px 18px;
+            font-size: 1rem;
+            color: #f0f0f0;
+            transition: border-color 0.25s, box-shadow 0.25s;
+            outline: none;
+            font-family: inherit;
+            width: 100%;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23aaa' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 44px;
+        }
+
+        .form-group select option {
+            background: #1a1a2e;
+            color: #f0f0f0;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #f39c12;
+            box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.12);
+            background: rgba(255, 255, 255, 0.07);
+        }
+
+        .form-group input::placeholder {
+            color: #777;
+            font-size: 0.95rem;
+        }
+
+        .accept-group {
+            background: rgba(243, 156, 18, 0.04);
+            border: 1px solid rgba(243, 156, 18, 0.1);
+            border-radius: 16px;
+            padding: 16px 18px;
+            margin-top: 4px;
+        }
+
+        .accept-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: #ddd;
+            margin-bottom: 8px;
+        }
+
+        .accept-group label .icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .accept-group label .icon svg {
+            width: 100%;
+            height: 100%;
+            fill: none;
+            stroke: #f1c40f;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .accept-group input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #555;
+            border-radius: 12px;
+            padding: 12px 16px;
+            width: 100%;
+            color: #fff;
+            font-size: 0.95rem;
+            transition: border-color 0.25s;
+        }
+
+        .accept-group input:focus {
+            border-color: #f39c12;
+            box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.08);
+        }
+
+        .accept-group input::placeholder {
+            color: #888;
+            font-style: italic;
+        }
+
+        .btn-submit {
+            width: 100%;
+            margin-top: 12px;
+            padding: 16px;
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            border: none;
+            border-radius: 40px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #0b0b14;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.3s;
+            box-shadow: 0 4px 24px rgba(243, 156, 18, 0.2);
+        }
+
+        .btn-submit:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 36px rgba(243, 156, 18, 0.35);
+        }
+
+        .btn-submit:active {
+            transform: scale(0.97);
+        }
+
+        .msg {
+            margin-top: 20px;
+            padding: 14px 18px;
+            border-radius: 16px;
+            text-align: center;
+            font-weight: 500;
+            display: none;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .msg.success {
+            display: block;
+            background: rgba(46, 204, 113, 0.1);
+            border: 1px solid #2ecc71;
+            color: #2ecc71;
+        }
+
+        .msg.error {
+            display: block;
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+        }
+
+        /* ===== DIÁLOGO PERSONALIZADO DE GERAÇÃO DE PDF ===== */
+        #pdfDialogOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(6px);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        #pdfDialogOverlay.active {
+            display: flex;
+        }
+
+        .pdf-dialog {
+            background: #18182a;
+            border-radius: 32px;
+            padding: 40px 32px;
+            max-width: 640px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 215, 0, 0.1);
+            text-align: center;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .pdf-dialog .dialog-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+        }
+
+        .pdf-dialog .dialog-icon svg {
+            width: 100%;
+            height: 100%;
+            fill: none;
+            stroke: #f1c40f;
+            stroke-width: 2;
+        }
+
+        .pdf-dialog h2 {
+            color: #f1c40f;
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+        }
+
+        .pdf-dialog p {
+            color: #bbb;
+            font-size: 1rem;
+            margin-bottom: 24px;
+        }
+
+        /* Barra de progresso do diálogo */
+        .dialog-progress {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            overflow: hidden;
+            margin: 16px 0 24px;
+        }
+
+        .dialog-progress .bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #f39c12, #f1c40f);
+            border-radius: 12px;
+            transition: width 0.4s ease;
+        }
+
+        .dialog-status {
+            font-size: 0.9rem;
+            color: #888;
+            margin-top: -8px;
+            margin-bottom: 16px;
+        }
+
+        /* Área de resultado (PDF gerado) */
+        #pdfResult {
+            display: none;
+            margin-top: 16px;
+        }
+
+        #pdfResult .pdf-preview {
+            background: #0b0b14;
+            border-radius: 16px;
+            padding: 12px;
+            border: 1px solid #333;
+            margin-bottom: 20px;
+        }
+
+        #pdfResult .pdf-preview iframe {
+            width: 100%;
+            height: 380px;
+            border: none;
+            border-radius: 8px;
+            background: #fff;
+        }
+
+        .pdf-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .pdf-actions .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .pdf-actions .btn {
+            padding: 14px 28px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #0b0b14;
+        }
+
+        .pdf-actions .btn-download {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            box-shadow: 0 4px 20px rgba(243, 156, 18, 0.25);
+        }
+
+        .pdf-actions .btn-download:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 30px rgba(243, 156, 18, 0.4);
+        }
+
+        .pdf-actions .btn-whatsapp {
+            background: #25D366;
+            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.25);
+            color: #fff;
+        }
+
+        .pdf-actions .btn-whatsapp:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 30px rgba(37, 211, 102, 0.4);
+        }
+
+        .pdf-actions .btn-close {
+            background: transparent;
+            color: #aaa;
+            border: 1px solid #444;
+            padding: 12px 24px;
+            color: #ccc;
+        }
+
+        .pdf-actions .btn-close:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .aviso {
+            background: rgba(243, 156, 18, 0.08);
+            border-left: 4px solid #f39c12;
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-top: 16px;
+            font-size: 0.9rem;
+            color: #ddd;
+            text-align: left;
+        }
+
+        .aviso strong {
+            color: #f1c40f;
+        }
+
+        /* Responsividade */
+        @media (max-width: 600px) {
+            .loader-text {
+                font-size: 1.1rem;
+            }
+            .badge-text {
+                font-size: 1.3rem;
+            }
+            .loader-icon {
+                width: 64px;
+                height: 64px;
+            }
+            .badge-icon {
+                width: 60px;
+                height: 60px;
+            }
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            .contract-text {
+                padding: 20px 16px;
+                font-size: 0.92rem;
+                border-left-width: 3px;
+            }
+            .contract-text h2 {
+                font-size: 1.05rem;
+            }
+            .form-section {
+                padding: 20px 14px;
+            }
+            .form-group input,
+            .form-group select {
+                padding: 12px 14px;
+                font-size: 0.95rem;
+            }
+            .accept-group {
+                padding: 12px 14px;
+            }
+            .btn-submit {
+                font-size: 1rem;
+                padding: 14px;
+            }
+            .pdf-dialog {
+                padding: 28px 18px;
+            }
+            .pdf-actions .btn-group {
+                flex-direction: column;
+            }
+            .pdf-actions .btn {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== TELA DE CARREGAMENTO INICIAL ===== -->
+    <div id="loadingScreen">
+        <div class="loader-icon">
+            <svg viewBox="0 0 100 100">
+                <path d="M50 10 L18 28 L18 58 C18 78 50 92 50 92 C50 92 82 78 82 58 L82 28 L50 10 Z" stroke="#f1c40f" stroke-width="2.5" fill="rgba(241,196,15,0.05)" />
+                <polygon points="50,32 56,46 72,46 60,56 64,72 50,62 36,72 40,56 28,46 44,46" fill="#f1c40f" stroke="none" opacity="0.9" />
+            </svg>
+        </div>
+        <div class="loader-text">
+            <strong>Aguarde um momento</strong><br />
+            Estamos verificando se sua conexão<br />
+            e seu navegador são seguros...
+        </div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <div id="verificationBadge">
+            <div class="badge-icon">
+                <svg viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="38" stroke="#2ecc71" stroke-width="2.5" fill="rgba(46,204,113,0.05)" />
+                    <polyline class="check-mark" points="32,50 46,64 70,38" stroke="#2ecc71" stroke-width="4" fill="none" />
+                    <circle cx="50" cy="50" r="2" fill="#2ecc71" opacity="0.6" />
+                </svg>
+            </div>
+            <div class="badge-text">Verificado com sucesso</div>
+        </div>
+    </div>
+
+    <!-- ===== CONTEÚDO PRINCIPAL ===== -->
+    <div id="mainContent">
+        <div class="container" style="max-width:780px; margin:0 auto;">
+
+            <div class="header">
+                <div class="star-icon">
+                    <svg viewBox="0 0 24 24">
+                        <polygon points="12,2 15,9 22,9 16,14 18,21 12,17 6,21 8,14 2,9 9,9" fill="#f1c40f" />
+                    </svg>
+                </div>
+                <h1>Dark Star Agency</h1>
+                <div class="sub">Contrato de Exclusividade · BIGO LIVE</div>
+            </div>
+
+            <!-- ===== CONTRATO ===== -->
+            <div id="contractContainer" class="contract-text">
+                <p style="text-align:center; font-size:1.1rem; font-weight:600; color:#f1c40f;">CONTRATO DE EXCLUSIVIDADE DE AGENCIAMENTO</p>
+                <p style="text-align:center; margin-top:-4px; color:#ccc;">AGÊNCIA DARK STAR – BIGO LIVE</p>
+
+                <p>
+                    Pelo presente instrumento particular, de um lado, <strong>AGÊNCIA DARK STAR</strong>, doravante denominada <strong>AGÊNCIA</strong>, e de outro lado, o(a) criador(a) de conteúdo identificado(a) ao final deste contrato, doravante denominado(a) <strong>HOST</strong>, celebram o presente Contrato de Exclusividade de Agenciamento, mediante as cláusulas e condições abaixo.
+                </p>
+
+                <hr style="border:0.5px solid #444; margin:20px 0;" />
+
+                <h2>CLÁUSULA 1 – DO OBJETO</h2>
+                <p>
+                    O presente contrato tem como objeto o agenciamento exclusivo do HOST pela Agência Dark Star para atuação na plataforma BIGO LIVE, incluindo suporte, orientação, treinamento, acompanhamento, gerenciamento de metas, campanhas, eventos e demais atividades relacionadas ao desenvolvimento do HOST dentro da plataforma.
+                </p>
+
+                <h2>CLÁUSULA 2 – DA EXCLUSIVIDADE</h2>
+                <p>
+                    O HOST declara que permanecerá vinculado exclusivamente à Agência Dark Star pelo período de 12 (doze) meses, contados da data da assinatura deste contrato.
+                </p>
+                <p>Durante esse período, o HOST concorda que:</p>
+                <ul>
+                    <li>Não poderá solicitar o cancelamento ou a rescisão unilateral deste contrato.</li>
+                    <li>Não poderá solicitar transferência para qualquer outra agência da BIGO LIVE.</li>
+                    <li>Não poderá vincular sua conta atual a outra agência.</li>
+                    <li>Não poderá criar, registrar, utilizar ou operar qualquer outra conta na BIGO LIVE com a finalidade de ingressar em outra agência, direta ou indiretamente.</li>
+                    <li>Não poderá utilizar contas de terceiros, familiares, amigos ou qualquer outro meio para burlar esta cláusula de exclusividade.</li>
+                    <li>Não poderá negociar sua saída da Agência Dark Star sem autorização expressa e por escrito da Agência.</li>
+                </ul>
+                <p>Qualquer tentativa de descumprimento desta cláusula será considerada quebra contratual grave.</p>
+
+                <h2>CLÁUSULA 3 – DAS OBRIGAÇÕES DA AGÊNCIA</h2>
+                <p>A Agência compromete-se a:</p>
+                <ul>
+                    <li>Prestar suporte e acompanhamento ao HOST.</li>
+                    <li>Auxiliar no cumprimento das metas estabelecidas pela BIGO LIVE.</li>
+                    <li>Disponibilizar treinamentos e orientações sempre que necessário.</li>
+                    <li>Informar alterações nas regras da plataforma.</li>
+                    <li>Orientar sobre campanhas, eventos e oportunidades disponíveis.</li>
+                    <li>Buscar oferecer atendimento e suporte de forma transparente e profissional.</li>
+                </ul>
+
+                <h2>CLÁUSULA 4 – DAS OBRIGAÇÕES DO HOST</h2>
+                <p>O HOST compromete-se a:</p>
+                <ul>
+                    <li>Cumprir todas as regras e políticas da BIGO LIVE.</li>
+                    <li>Manter comportamento ético e respeitoso dentro e fora da plataforma.</li>
+                    <li>Não praticar fraudes ou qualquer atividade ilícita.</li>
+                    <li>Não utilizar métodos artificiais para manipulação de resultados.</li>
+                    <li>Não divulgar informações internas da Agência.</li>
+                    <li>Respeitar os administradores, coordenadores e demais membros da Agência.</li>
+                    <li>Cumprir as metas exigidas pela plataforma quando aplicáveis.</li>
+                </ul>
+
+                <h2>CLÁUSULA 5 – DA CONFIDENCIALIDADE</h2>
+                <p>
+                    Todo treinamento, documento, estratégia, lista de hosts, métodos de trabalho, campanhas, informações administrativas e qualquer outro material fornecido pela Agência Dark Star são confidenciais.
+                </p>
+                <p>
+                    O HOST compromete-se a não divulgar, compartilhar, copiar ou repassar qualquer informação pertencente à Agência sem autorização expressa.
+                </p>
+                <p>A obrigação de confidencialidade permanecerá válida mesmo após o encerramento deste contrato.</p>
+
+                <h2>CLÁUSULA 6 – DA VIGÊNCIA</h2>
+                <p>
+                    O presente contrato terá validade de 12 (doze) meses, contados da data de sua assinatura.
+                </p>
+                <p>Durante esse período o vínculo entre o HOST e a Agência Dark Star será de caráter exclusivo.</p>
+
+                <h2>CLÁUSULA 7 – DA RESCISÃO</h2>
+                <p>
+                    Durante os 12 (doze) meses de vigência deste contrato, o HOST não poderá solicitar cancelamento, desligamento ou rescisão por vontade própria.
+                </p>
+                <p>Somente a Agência Dark Star poderá autorizar o encerramento antecipado do contrato mediante autorização formal por escrito.</p>
+                <p>A Agência poderá rescindir imediatamente este contrato caso o HOST:</p>
+                <ul>
+                    <li>Descumpra qualquer cláusula prevista neste documento.</li>
+                    <li>Descumpra as regras da BIGO LIVE.</li>
+                    <li>Cause prejuízo financeiro ou moral à Agência.</li>
+                    <li>Pratique fraude.</li>
+                    <li>Divulgue informações confidenciais.</li>
+                    <li>Utilize outra conta para ingressar em outra agência.</li>
+                    <li>Vincule-se direta ou indiretamente a outra agência.</li>
+                </ul>
+
+                <h2>CLÁUSULA 8 – DA MULTA CONTRATUAL</h2>
+                <p>
+                    O descumprimento das cláusulas de exclusividade previstas neste contrato sujeitará o HOST ao pagamento de multa contratual de até <strong>US$ 500,00 (quinhentos dólares americanos)</strong>.
+                </p>
+                <p>A multa poderá ser aplicada quando o HOST:</p>
+                <ul>
+                    <li>Cancelar o contrato antes do término dos 12 meses.</li>
+                    <li>Solicitar transferência para outra agência.</li>
+                    <li>Entrar em outra agência utilizando sua conta principal.</li>
+                    <li>Criar uma nova conta para ingressar em outra agência.</li>
+                    <li>Utilizar conta de terceiros para entrar em outra agência.</li>
+                    <li>Burlar qualquer regra de exclusividade prevista neste contrato.</li>
+                </ul>
+                <p>
+                    O pagamento da multa não impede que a Agência Dark Star adote outras medidas legais cabíveis para reparação dos prejuízos eventualmente causados.
+                </p>
+                <p>
+                    <strong>Parágrafo único:</strong> Caso a conta oficial do HOST seja permanentemente banida pela BIGO LIVE, a multa prevista nesta cláusula não será aplicada, desde que o HOST comunique imediatamente a Agência Dark Star sobre o banimento e apresente, quando solicitado, comprovação da penalidade aplicada pela plataforma. A omissão dessa informação poderá caracterizar descumprimento contratual.
+                </p>
+
+                <h2>CLÁUSULA 9 – DA CONDUTA</h2>
+                <p>O HOST deverá manter comportamento profissional, respeitoso e ético durante toda a vigência deste contrato.</p>
+                <p>É proibido:</p>
+                <ul>
+                    <li>Praticar golpes ou fraudes.</li>
+                    <li>Utilizar programas ilegais.</li>
+                    <li>Manipular campanhas ou eventos.</li>
+                    <li>Comprar ou vender diamantes de forma irregular.</li>
+                    <li>Publicar conteúdos proibidos pelas regras da BIGO LIVE.</li>
+                    <li>Ofender usuários, administradores ou qualquer membro da Agência.</li>
+                </ul>
+
+                <h2>CLÁUSULA 10 – DAS PENALIDADES</h2>
+                <p>O descumprimento das obrigações previstas neste contrato poderá acarretar:</p>
+                <ul>
+                    <li>Aplicação da multa contratual.</li>
+                    <li>Desligamento imediato da Agência.</li>
+                    <li>Perda de benefícios internos.</li>
+                    <li>Exclusão de grupos oficiais.</li>
+                    <li>Suspensão de campanhas internas.</li>
+                    <li>Responsabilização pelos prejuízos causados à Agência.</li>
+                </ul>
+
+                <h2>CLÁUSULA 11 – DA AUSÊNCIA DE VÍNCULO EMPREGATÍCIO</h2>
+                <p>
+                    O presente contrato possui natureza exclusivamente de agenciamento. A assinatura deste contrato não gera vínculo empregatício entre a Agência Dark Star e o HOST, permanecendo cada parte responsável por suas obrigações legais, fiscais e tributárias.
+                </p>
+
+                <h2>CLÁUSULA 12 – DAS DISPOSIÇÕES GERAIS</h2>
+                <p>
+                    O HOST declara que leu integralmente este contrato, compreendeu todas as suas cláusulas e concorda livremente com seus termos.
+                </p>
+                <p>
+                    Qualquer alteração deste contrato somente terá validade se realizada por escrito e assinada por ambas as partes.
+                </p>
+                <p>A eventual tolerância da Agência quanto ao descumprimento de qualquer cláusula não constituirá renúncia de direitos.</p>
+
+                <h2>CLÁUSULA 13 – DO FORO</h2>
+                <p>
+                    As partes elegem o foro da comarca da sede da Agência Dark Star para resolver quaisquer conflitos decorrentes deste contrato, observada a legislação brasileira aplicável.
+                </p>
+
+                <div class="signature-line">
+                    Ao assinar este contrato, o HOST declara estar plenamente ciente e de acordo com todas as cláusulas acima, comprometendo-se a cumpri-las integralmente.
+                </div>
+            </div>
+
+            <!-- ===== FORMULÁRIO ===== -->
+            <div class="form-section" id="formSection">
+                <h3>✦ Assinatura Digital</h3>
+                <form id="contractForm" onsubmit="return handleSubmit(event)">
+
+                    <div class="form-group">
+                        <label for="bigoId">BIGO ID <span class="required">*</span></label>
+                        <input type="text" id="bigoId" placeholder="Ex: bigo_123456" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bigoUserId">Nome utilizado dentro da BIGO Live <span class="required">*</span></label>
+                        <input type="text" id="bigoUserId" placeholder="Ex: @seu_nome ou seu_nick" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="firstName">Nome da pessoa <span class="required">*</span></label>
+                        <input type="text" id="firstName" placeholder="Apenas o primeiro nome" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="agentName">Nome do agente assinado <span class="required">*</span></label>
+                        <select id="agentName" required>
+                            <option value="" disabled selected>Selecione o agente</option>
+                            <option value="Aleky">Aleky</option>
+                            <option value="Jonny">Jonny</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="coopDate">Data de cooperação <span class="required">*</span></label>
+                        <input type="date" id="coopDate" required />
+                    </div>
+
+                    <div class="form-group accept-group">
+                        <label>
+                            <span class="icon">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M4 4h16v16H4z" stroke="#f1c40f" stroke-width="1.5" fill="none" />
+                                    <path d="M8 12l3 3 6-6" stroke="#f1c40f" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </span>
+                            Confirmação de leitura
+                        </label>
+                        <input
+                        type="text"
+                        id="acceptance"
+                        placeholder="Digite exatamente: aceito todos termos do contrato"
+                        required
+                        />
+                    </div>
+
+                    <button type="submit" class="btn-submit">✓ Confirmar &amp; Assinar</button>
+
+                    <div id="formMessage" class="msg"></div>
+
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ===== DIÁLOGO PERSONALIZADO DE GERAÇÃO DE PDF ===== -->
+    <div id="pdfDialogOverlay">
+        <div class="pdf-dialog">
+            <!-- Ícone animado (livro/contrato) -->
+            <div class="dialog-icon">
+                <svg viewBox="0 0 100 100">
+                    <rect x="20" y="20" width="60" height="60" rx="4" stroke="#f1c40f" stroke-width="2.5" fill="rgba(241,196,15,0.05)" />
+                    <line x1="35" y1="40" x2="65" y2="40" stroke="#f1c40f" stroke-width="2" />
+                    <line x1="35" y1="50" x2="65" y2="50" stroke="#f1c40f" stroke-width="2" />
+                    <line x1="35" y1="60" x2="55" y2="60" stroke="#f1c40f" stroke-width="2" />
+                    <polyline points="70,28 78,28 78,72 70,72" stroke="#f1c40f" stroke-width="2" fill="none" />
+                </svg>
+            </div>
+
+            <h2 id="dialogTitle">Gerando seu contrato</h2>
+            <p id="dialogDesc">Aguarde enquanto preparamos o documento em PDF.</p>
+
+            <!-- Barra de progresso -->
+            <div class="dialog-progress">
+                <div class="bar" id="pdfProgressBar"></div>
+            </div>
+            <div class="dialog-status" id="pdfStatus">0%</div>
+
+            <!-- Resultado (PDF gerado) -->
+            <div id="pdfResult">
+                <div class="pdf-preview">
+                    <iframe id="pdfIframe" src=""></iframe>
+                </div>
+
+                <div class="pdf-actions">
+                    <div class="btn-group">
+                        <button class="btn btn-download" id="downloadPdfBtn">⬇ Baixar PDF</button>
+                        <button class="btn btn-whatsapp" id="whatsappShareBtn">📱 Compartilhar no WhatsApp</button>
+                    </div>
+                    <button class="btn btn-close" id="closePdfDialog">Fechar</button>
+                </div>
+
+                <div class="aviso">
+                    <strong>⚠️ Importante:</strong> Para que o contrato seja efetivado com sucesso, você deve <strong>baixar o PDF</strong> e <strong>compartilhar no WhatsApp</strong> com o agente responsável (Aleky ou Jonny). O envio do documento é a confirmação final da sua assinatura.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ===== TELA DE CARREGAMENTO INICIAL =====
+            const loadingScreen = document.getElementById('loadingScreen');
+            const progressBar = document.getElementById('progressBar');
+            const verificationBadge = document.getElementById('verificationBadge');
+            const mainContent = document.getElementById('mainContent');
+
+            let startTime = Date.now();
+            const duration = 10000; // 10 segundos
+
+            const interval = setInterval(function() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min((elapsed / duration) * 100, 100);
+                progressBar.style.width = progress + '%';
+
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    verificationBadge.style.display = 'flex';
+                    setTimeout(function() {
+                        loadingScreen.classList.add('hidden');
+                        mainContent.style.display = 'block';
+                        const dateInput = document.getElementById('coopDate');
+                        if (dateInput) {
+                            const today = new Date().toISOString().split('T')[0];
+                            dateInput.value = today;
+                        }
+                    }, 1000);
+                }
+            }, 100);
+
+            // Fallback
+            setTimeout(function() {
+                if (!loadingScreen.classList.contains('hidden')) {
+                    clearInterval(interval);
+                    progressBar.style.width = '100%';
+                    verificationBadge.style.display = 'flex';
+                    setTimeout(function() {
+                        loadingScreen.classList.add('hidden');
+                        mainContent.style.display = 'block';
+                        const dateInput = document.getElementById('coopDate');
+                        if (dateInput) {
+                            const today = new Date().toISOString().split('T')[0];
+                            dateInput.value = today;
+                        }
+                    }, 1000);
+                }
+            }, 11500);
+
+            // ===== FUNÇÃO PARA GERAR PDF =====
+            function generatePDF(formData) {
+                return new Promise((resolve, reject) => {
+                    // Criar um elemento temporário para capturar o contrato + dados
+                    const container = document.createElement('div');
+                    container.style.cssText = `
+                        background: #0b0b14;
+                        color: #e8e8e8;
+                        font-family: 'Segoe UI', Roboto, sans-serif;
+                        padding: 40px 36px;
+                        max-width: 780px;
+                        margin: 0 auto;
+                        line-height: 1.6;
+                    `;
+
+                    // Clonar o conteúdo do contrato
+                    const contractClone = document.getElementById('contractContainer').cloneNode(true);
+                    contractClone.style.borderLeft = '4px solid #f39c12';
+                    contractClone.style.padding = '20px';
+                    contractClone.style.background = 'rgba(0,0,0,0.25)';
+                    contractClone.style.borderRadius = '16px';
+                    contractClone.style.marginBottom = '20px';
+
+                    // Adicionar os dados preenchidos
+                    const dataSection = document.createElement('div');
+                    dataSection.style.cssText = `
+                        background: rgba(0,0,0,0.3);
+                        border-radius: 16px;
+                        padding: 20px;
+                        border: 1px solid #f39c12;
+                        margin-top: 20px;
+                    `;
+                    dataSection.innerHTML = `
+                        <h3 style="color:#f1c40f; margin-top:0;">Dados do HOST</h3>
+                        <p><strong>BIGO ID:</strong> ${formData.bigoId}</p>
+                        <p><strong>Nome na BIGO Live:</strong> ${formData.bigoUserId}</p>
+                        <p><strong>Nome:</strong> ${formData.firstName}</p>
+                        <p><strong>Agente:</strong> ${formData.agentName}</p>
+                        <p><strong>Data de cooperação:</strong> ${formData.coopDate}</p>
+                        <p><strong>Declaração:</strong> "${formData.acceptance}"</p>
+                        <p style="color:#2ecc71; font-weight:600;">✓ Contrato assinado digitalmente</p>
+                    `;
+
+                    container.appendChild(contractClone);
+                    container.appendChild(dataSection);
+
+                    // Adicionar um rodapé
+                    const footer = document.createElement('div');
+                    footer.style.cssText = `
+                        margin-top: 30px;
+                        padding-top: 16px;
+                        border-top: 1px solid #444;
+                        text-align: center;
+                        color: #888;
+                        font-size: 0.8rem;
+                    `;
+                    footer.innerHTML = `Dark Star Agency · Contrato gerado em ${new Date().toLocaleString('pt-BR')}`;
+                    container.appendChild(footer);
+
+                    // Adicionar ao body para renderizar (invisível)
+                    container.style.position = 'absolute';
+                    container.style.left = '-9999px';
+                    container.style.top = '0';
+                    container.style.width = '780px';
+                    document.body.appendChild(container);
+
+                    // Usar html2canvas para capturar a área
+                    html2canvas(container, {
+                        scale: 2,
+                        backgroundColor: '#0b0b14',
+                        allowTaint: false,
+                        useCORS: true,
+                        logging: false,
+                        width: 780,
+                        height: container.scrollHeight,
+                    }).then((canvas) => {
+                        // Remover o elemento temporário
+                        document.body.removeChild(container);
+
+                        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                        const { jsPDF } = window.jspdf;
+                        const pdf = new jsPDF('p', 'mm', 'a4');
+                        const pdfWidth = 210;
+                        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                        pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+                        resolve(pdf);
+                    }).catch((err) => {
+                        document.body.removeChild(container);
+                        reject(err);
+                    });
+                });
+            }
+
+            // ===== SUBMISSÃO DO FORMULÁRIO =====
+            window.handleSubmit = function(event) {
+                event.preventDefault();
+
+                const msgDiv = document.getElementById('formMessage');
+
+                const bigoId = document.getElementById('bigoId').value.trim();
+                const bigoUserId = document.getElementById('bigoUserId').value.trim();
+                const firstName = document.getElementById('firstName').value.trim();
+                const agentName = document.getElementById('agentName').value;
+                const coopDate = document.getElementById('coopDate').value;
+                const acceptance = document.getElementById('acceptance').value.trim();
+
+                const expected = 'aceito todos termos do contrato';
+                if (acceptance.toLowerCase() !== expected) {
+                    msgDiv.className = 'msg error';
+                    msgDiv.textContent = `❌ Por favor, digite exatamente: "${expected}" no campo de confirmação.`;
+                    return false;
+                }
+
+                if (!bigoId || !bigoUserId || !firstName || !agentName || !coopDate) {
+                    msgDiv.className = 'msg error';
+                    msgDiv.textContent = '⚠️ Preencha todos os campos obrigatórios.';
+                    return false;
+                }
+
+                // Esconder mensagem anterior
+                msgDiv.className = 'msg';
+                msgDiv.textContent = '';
+
+                // Dados para o PDF
+                const formData = {
+                    bigoId,
+                    bigoUserId,
+                    firstName,
+                    agentName,
+                    coopDate: formatDate(coopDate),
+                    acceptance
+                };
+
+                // Abrir diálogo de progresso
+                const overlay = document.getElementById('pdfDialogOverlay');
+                overlay.classList.add('active');
+
+                const progressBarDialog = document.getElementById('pdfProgressBar');
+                const statusText = document.getElementById('pdfStatus');
+                const resultDiv = document.getElementById('pdfResult');
+                resultDiv.style.display = 'none';
+
+                // Simular progresso
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += Math.floor(Math.random() * 8) + 3;
+                    if (progress > 95) progress = 95;
+                    progressBarDialog.style.width = progress + '%';
+                    statusText.textContent = progress + '%';
+                }, 200);
+
+                // Gerar PDF
+                generatePDF(formData).then((pdf) => {
+                    clearInterval(progressInterval);
+                    progressBarDialog.style.width = '100%';
+                    statusText.textContent = '100%';
+
+                    // Obter o PDF como blob URL
+                    const pdfBlob = pdf.output('blob');
+                    const pdfUrl = URL.createObjectURL(pdfBlob);
+
+                    // Exibir no iframe
+                    const iframe = document.getElementById('pdfIframe');
+                    iframe.src = pdfUrl;
+
+                    // Configurar botão de download
+                    const downloadBtn = document.getElementById('downloadPdfBtn');
+                    downloadBtn.onclick = function() {
+                        const link = document.createElement('a');
+                        link.href = pdfUrl;
+                        link.download = `Contrato_DarkStar_${formData.firstName}.pdf`;
+                        link.click();
+                    };
+
+                    // Configurar botão WhatsApp
+                    const whatsappBtn = document.getElementById('whatsappShareBtn');
+                    whatsappBtn.onclick = function() {
+                        const msg = `*Contrato assinado - Dark Star Agency*%0A%0A` +
+                            `BIGO ID: ${formData.bigoId}%0A` +
+                            `Nome na BIGO: ${formData.bigoUserId}%0A` +
+                            `HOST: ${formData.firstName}%0A` +
+                            `Agente: ${formData.agentName}%0A` +
+                            `Data: ${formData.coopDate}%0A` +
+                            `Declaração: "${formData.acceptance}"%0A%0A` +
+                            `O PDF do contrato está anexado a esta mensagem. Por favor, confirme o recebimento.`;
+
+                        // Abrir WhatsApp Web (ou app)
+                        const url = `https://wa.me/?text=${msg}`;
+                        window.open(url, '_blank');
+                    };
+
+                    // Exibir resultado
+                    resultDiv.style.display = 'block';
+                    document.getElementById('dialogTitle').textContent = '✅ Contrato gerado com sucesso!';
+                    document.getElementById('dialogDesc').textContent = 'Seu PDF está pronto para download e compartilhamento.';
+
+                }).catch((err) => {
+                    clearInterval(progressInterval);
+                    console.error(err);
+                    statusText.textContent = '❌ Erro ao gerar PDF';
+                    document.getElementById('dialogTitle').textContent = '❌ Falha na geração';
+                    document.getElementById('dialogDesc').textContent = 'Ocorreu um erro. Tente novamente.';
+                });
+
+                // Fechar diálogo
+                document.getElementById('closePdfDialog').onclick = function() {
+                    overlay.classList.remove('active');
+                    // Limpar iframe
+                    document.getElementById('pdfIframe').src = '';
+                    resultDiv.style.display = 'none';
+                    progressBarDialog.style.width = '0%';
+                    statusText.textContent = '0%';
+                    document.getElementById('dialogTitle').textContent = 'Gerando seu contrato';
+                    document.getElementById('dialogDesc').textContent = 'Aguarde enquanto preparamos o documento em PDF.';
+                };
+
+                // Impedir envio real do form
+                return false;
+            };
+
+            function formatDate(dateStr) {
+                if (!dateStr) return '';
+                const [y, m, d] = dateStr.split('-');
+                return `${d}/${m}/${y}`;
+            }
+
+        })();
+    </script>
+
+</body>
+</html>
